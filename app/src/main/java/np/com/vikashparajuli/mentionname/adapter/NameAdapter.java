@@ -2,6 +2,7 @@ package np.com.vikashparajuli.mentionname.adapter;
 
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,14 +16,19 @@ import np.com.vikashparajuli.mentionname.R;
  * Created by vikash on 6/28/17.
  */
 
-public class NameAdapter extends RecyclerView.Adapter<NameAdapter.MyViewHolder>{
+public class NameAdapter extends RecyclerView.Adapter<NameAdapter.MyViewHolder> {
 
     private Activity mActivity;
-    private ArrayList<String> names;
+    private ArrayList<String> data;
+    private ArrayList<String> dataCopy = new ArrayList<>();
+    private RecyclerVisibilityListener listener;
 
     public NameAdapter(Activity mActivity, ArrayList<String> names) {
         this.mActivity = mActivity;
-        this.names = names;
+        this.data = names;
+        dataCopy.addAll(data);
+
+        listener = (RecyclerVisibilityListener) mActivity;
     }
 
     @Override
@@ -34,12 +40,35 @@ public class NameAdapter extends RecyclerView.Adapter<NameAdapter.MyViewHolder>{
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        holder.tvName.setText(names.get(position));
+        holder.tvName.setText(data.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return names.size();
+        return data.size();
+    }
+
+    public void filter(String text) {
+        data.clear();
+        if (text.isEmpty()) {
+            data.addAll(dataCopy);
+        } else {
+            text = text.toLowerCase();
+            Log.e("text ===", text);
+            for (String item : dataCopy) {
+                Log.e("item ===", text);
+                if (item.toLowerCase().contains(text)) {
+                    data.add(item);
+                }
+            }
+        }
+        notifyDataSetChanged();
+
+        if (data.size() == dataCopy.size())
+            listener.setVisibility(false);
+        else if (data.size() > 0)
+            listener.setVisibility(true);
+        else listener.setVisibility(false);
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -50,5 +79,9 @@ public class NameAdapter extends RecyclerView.Adapter<NameAdapter.MyViewHolder>{
             super(view);
             tvName = (TextView) view.findViewById(R.id.tvName);
         }
+    }
+
+    public interface RecyclerVisibilityListener {
+        void setVisibility(boolean bool);
     }
 }
